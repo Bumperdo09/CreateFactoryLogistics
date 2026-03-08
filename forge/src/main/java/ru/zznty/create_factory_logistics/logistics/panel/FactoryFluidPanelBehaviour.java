@@ -121,24 +121,30 @@ public class FactoryFluidPanelBehaviour extends FactoryPanelBehaviour implements
         if (level >= BigItemStack.INF)
             return CreateLang.text("\u221e");
 
-        if (!round || level < 1000 || level % 1000 != 0) {
-            if (level % 1000 == 0)
-                return CreateLang.number((float) level / 1000).add(CreateLang.translate("generic.unit.buckets"));
+        if (level >= 1_000_000){ // If more than 1k buckets, show as thousands
+            return CreateLang.number((float) level / 1_000_000)
+                    .add(CreateLang.text("k"))
+                    .add(CreateLang.translate("generic.unit.buckets"));
+        }
 
+        if (level % 1000 == 0){ //If perfect bucket, show as buckets
+            return CreateLang.number((float) level / 1000).add(CreateLang.translate("generic.unit.buckets"));
+        }
+
+        if (level < 2_000){ // Less than 2B, always show mb
             return CreateLang.number(level).add(CreateLang.translate("generic.unit.millibuckets"));
         }
 
-        // 1000 buckets
-        if (level < 1_000_000) {
+        if (round){ // If more than 2B and rounding, show as buckets
             float d = (float) level / 1000;
             if (d >= 100)
-                d = Math.round(d);
+                d = Math.round(d); //stop showing decimals if more than 100B
             return CreateLang.number(d).add(CreateLang.translate("generic.unit.buckets"));
         }
 
-        return CreateLang.number((float) level / 1_000_000)
-                .add(CreateLang.text("k"))
-                .add(CreateLang.translate("generic.unit.buckets"));
+        // More than 2B and no rounding, show mb
+        return CreateLang.number(level).add(CreateLang.translate("generic.unit.millibuckets"));
+
     }
 
     @Override
