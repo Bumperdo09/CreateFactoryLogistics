@@ -25,6 +25,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import ru.zznty.create_factory_abstractions.api.generic.crafting.OrderProvider;
 import ru.zznty.create_factory_abstractions.api.generic.crafting.RecipeRequestHelper;
@@ -36,6 +37,7 @@ import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
 import ru.zznty.create_factory_abstractions.generic.support.BigGenericStack;
 import ru.zznty.create_factory_abstractions.generic.support.CraftableGenericStack;
 import ru.zznty.create_factory_abstractions.generic.support.GenericInventorySummary;
+import ru.zznty.create_factory_logistics.logistics.generic.FluidKey;
 import ru.zznty.create_factory_logistics.logistics.ingredient.ClickableIngredientProvider;
 import ru.zznty.create_factory_logistics.mixin.accessor.CategoryEntryAccessor;
 import ru.zznty.create_factory_logistics.mixin.accessor.StockTickerBlockEntityAccessor;
@@ -165,6 +167,21 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
         BigGenericStack genericStack = BigGenericStack.of(BigGenericStack.of(entry).get().withAmount(1));
         genericStack.setAmount(0);
         return genericStack.asStack();
+    }
+
+    @ModifyArg(
+            method = "mouseScrolled",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/util/Mth;ceil(D)I"
+            )
+    )
+    private double transferNum(double transfer, @Local BigItemStack entry){
+        if (BigGenericStack.of(entry).get().key() instanceof FluidKey){
+            var scrollAmount = transfer/(hasControlDown() ? 10 : 1); //Get back scroll amount
+            transfer = scrollAmount * (hasControlDown()? 10 : 1000);
+        }
+        return transfer;
     }
 
     @Redirect(

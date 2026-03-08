@@ -18,6 +18,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraftforge.fluids.FluidStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
@@ -27,6 +28,7 @@ import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
 import ru.zznty.create_factory_abstractions.generic.impl.GenericContentExtender;
 import ru.zznty.create_factory_abstractions.generic.support.BigGenericStack;
 import ru.zznty.create_factory_logistics.FactoryBlocks;
+import ru.zznty.create_factory_logistics.logistics.generic.FluidKey;
 import ru.zznty.create_factory_logistics.logistics.jar.JarPackageItem;
 import ru.zznty.create_factory_logistics.logistics.panel.FactoryFluidPanelBehaviour;
 
@@ -336,6 +338,17 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
         int maxStackSize = GenericContentExtender.registrationOf(stack.get().key()).clientProvider().guiHandler()
                 .maxStackSize(stack.get().key());
 
+        if (stack.get().key() instanceof FluidKey){
+            var scrollAmount = (value - stack.asStack().count) / (hasShiftDown() ? 10 : 1);
+            var multiplier = 1000;
+
+            if (hasShiftDown() && hasControlDown()) {multiplier = 1;}
+            else if (hasControlDown()) {multiplier = 10;}
+            else if (hasShiftDown()) {multiplier = 100;}
+
+            value = stack.asStack().count + scrollAmount * multiplier;
+        }
+
         if (maxStackSize < 0)
             return Math.max(1, value);
 
@@ -355,6 +368,17 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
 
         int maxStackSize = GenericContentExtender.registrationOf(stack.get().key()).clientProvider().guiHandler()
                 .maxStackSize(stack.get().key());
+
+        if (stack.get().key() instanceof FluidKey){
+            var scrollAmount = (value - stack.asStack().count) / (hasShiftDown() ? 10 : 1); //Get back scroll amount
+
+            var multiplier = 1000; //If no keys pressed
+            if (hasShiftDown() && hasControlDown()) {multiplier = 1;}
+            else if (hasControlDown()) {multiplier = 10;}
+            else if (hasShiftDown()) {multiplier = 100;}
+
+            value = stack.asStack().count + scrollAmount * multiplier;
+        }
 
         if (maxStackSize < 0)
             return Math.max(1, value);

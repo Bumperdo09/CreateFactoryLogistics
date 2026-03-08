@@ -29,11 +29,13 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Debug;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Constant;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import ru.zznty.create_factory_abstractions.api.generic.stack.GenericStack;
@@ -44,6 +46,7 @@ import ru.zznty.create_factory_abstractions.generic.support.GenericGhostMenu;
 import ru.zznty.create_factory_abstractions.generic.support.GenericRedstoneRequester;
 import ru.zznty.create_factory_abstractions.generic.support.GenericRedstoneRequesterConfigurationPacket;
 import ru.zznty.create_factory_logistics.logistics.generic.FluidGenericStack;
+import ru.zznty.create_factory_logistics.logistics.generic.FluidKey;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -161,6 +164,28 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
     private boolean isIngredientEmptyMouseHandler(boolean original,
                                                   @Share("genericStackLocalRef") LocalRef<GenericStack> genericStackLocalRef) {
         return genericStackLocalRef.get().isEmpty();
+    }
+
+    @ModifyArg(
+            method = "mouseScrolled",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/util/Mth;clamp(III)I"
+            ),
+            index = 0
+    )
+    private int transferNum(int transfer,@Local(ordinal = 2) int i, @Share("genericStackLocalRef") LocalRef<GenericStack> genericStackLocalRef){
+        if (genericStackLocalRef.get().key() instanceof FluidKey){
+            var scrollAmount = (transfer-amounts.get(i))/(hasShiftDown() ? 10 : 1); //get back scroll amount
+            var multiplier = 1000; //If no keys are pressed
+
+            if (hasShiftDown() && hasControlDown()) {multiplier = 1;}
+            else if (hasControlDown()) {multiplier = 10;}
+            else if (hasShiftDown()) {multiplier = 100;}
+
+            transfer = amounts.get(i) + scrollAmount * multiplier;
+        }
+        return transfer;
     }
 
     @ModifyConstant(
