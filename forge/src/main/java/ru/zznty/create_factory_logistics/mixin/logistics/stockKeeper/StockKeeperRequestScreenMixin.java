@@ -17,6 +17,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -176,10 +177,9 @@ public abstract class StockKeeperRequestScreenMixin extends AbstractSimiContaine
                     target = "Lnet/minecraft/util/Mth;ceil(D)I"
             )
     )
-    private double transferNum(double transfer, @Local BigItemStack entry){
+    private double transferNum(double transfer, @Local BigItemStack entry, @Local(ordinal = 2, argsOnly = true) double delta){
         if (BigGenericStack.of(entry).get().key() instanceof FluidKey){
-            var scrollAmount = transfer/(hasControlDown() ? 10 : 1); //Get back scroll amount
-            transfer = scrollAmount * (hasControlDown()? 10 : 1000);
+            transfer = Mth.ceil(Math.abs(delta)) * (hasControlDown()? 10 : 1000);
         }
         return transfer;
     }

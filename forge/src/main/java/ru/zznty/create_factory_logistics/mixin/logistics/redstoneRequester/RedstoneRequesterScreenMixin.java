@@ -174,16 +174,14 @@ public abstract class RedstoneRequesterScreenMixin extends AbstractSimiContainer
             ),
             index = 0
     )
-    private int transferNum(int transfer,@Local(ordinal = 2) int i, @Share("genericStackLocalRef") LocalRef<GenericStack> genericStackLocalRef){
+    private int transferNum(int transfer, @Local(ordinal = 2) int i, @Local(ordinal = 2, argsOnly = true) double pDelta , @Share("genericStackLocalRef") LocalRef<GenericStack> genericStackLocalRef){
         if (genericStackLocalRef.get().key() instanceof FluidKey){
-            var scrollAmount = (transfer-amounts.get(i))/(hasShiftDown() ? 10 : 1); //get back scroll amount
             var multiplier = 1000; //If no keys are pressed
-
             if (hasShiftDown() && hasControlDown()) {multiplier = 1;}
             else if (hasControlDown()) {multiplier = 10;}
             else if (hasShiftDown()) {multiplier = 100;}
 
-            transfer = amounts.get(i) + scrollAmount * multiplier;
+            transfer = (int) (amounts.get(i) + Math.signum(pDelta) * multiplier);
         }
         return transfer;
     }

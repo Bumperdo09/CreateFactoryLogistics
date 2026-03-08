@@ -332,21 +332,19 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
             )
     )
     private int scrollInputClampRemoval(int value, int min, int max, Operation<Integer> original,
-                                        @Local BigItemStack itemStack) {
+                                        @Local BigItemStack itemStack, @Local(ordinal = 2, argsOnly = true) double pDelta) {
         BigGenericStack stack = BigGenericStack.of(itemStack);
 
         int maxStackSize = GenericContentExtender.registrationOf(stack.get().key()).clientProvider().guiHandler()
                 .maxStackSize(stack.get().key());
 
         if (stack.get().key() instanceof FluidKey){
-            var scrollAmount = (value - stack.asStack().count) / (hasShiftDown() ? 10 : 1);
-            var multiplier = 1000;
-
+            var multiplier = 1000; //If no keys pressed
             if (hasShiftDown() && hasControlDown()) {multiplier = 1;}
             else if (hasControlDown()) {multiplier = 10;}
             else if (hasShiftDown()) {multiplier = 100;}
 
-            value = stack.asStack().count + scrollAmount * multiplier;
+            value = (int) (stack.asStack().count + Math.signum(pDelta) * multiplier);
         }
 
         if (maxStackSize < 0)
@@ -363,21 +361,19 @@ public abstract class FactoryPanelScreenMixin extends AbstractSimiScreen {
                     ordinal = 1
             )
     )
-    private int scrollOutputClampRemoval(int value, int min, int max, Operation<Integer> original) {
+    private int scrollOutputClampRemoval(int value, int min, int max, Operation<Integer> original, @Local(ordinal = 2, argsOnly = true) double pDelta) {
         BigGenericStack stack = BigGenericStack.of(outputConfig);
 
         int maxStackSize = GenericContentExtender.registrationOf(stack.get().key()).clientProvider().guiHandler()
                 .maxStackSize(stack.get().key());
 
         if (stack.get().key() instanceof FluidKey){
-            var scrollAmount = (value - stack.asStack().count) / (hasShiftDown() ? 10 : 1); //Get back scroll amount
-
             var multiplier = 1000; //If no keys pressed
             if (hasShiftDown() && hasControlDown()) {multiplier = 1;}
             else if (hasControlDown()) {multiplier = 10;}
             else if (hasShiftDown()) {multiplier = 100;}
 
-            value = stack.asStack().count + scrollAmount * multiplier;
+            value = (int) (stack.asStack().count + Math.signum(pDelta) * multiplier);
         }
 
         if (maxStackSize < 0)
